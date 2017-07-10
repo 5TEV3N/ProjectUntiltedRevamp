@@ -13,58 +13,63 @@ public class MouseController : MonoBehaviour
 
     [Header("Interaction")]
     public Vector2 mousePositionOnScreen;
+    public Vector3 mousePositionRaw;
     public GameObject hit;
     public KeyCode InteractionButton;
     public float mouseRayDistance;
 
-    public Vector3 mousePositionRaw;
-    private Vector3 mousePositionFromCamera;
     private Vector3 originalCameraPosition;
     private Vector3 pannedInCameraPosition;
+
+    private Vector3 mousePositionFromCamera;
+    private Vector3 objectPositionToScreenWorldPoint;
+
     private RaycastHit mouseHit;
     private Ray mouseRay;
     private LayerMask interactiveMask;
 
+    private bool canRotate;
+
     private void Awake()
     {
         originalCameraPosition = Camera.main.transform.position;
+        pannedInCameraPosition = new Vector3(0, 0, -5f);
         interactiveMask = LayerMask.GetMask("Interactive");
     }
 
     private void Update()
     {
-        DebugRaycast();
+        //DebugRaycast();
         mousePositionRaw = new Vector3(Input.mousePosition.x, Input.mousePosition.y,5f);
-        Vector3 objectPositionToScreenWorldPoint = Camera.main.ScreenToWorldPoint(mousePositionRaw);
+        mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        objectPositionToScreenWorldPoint = Camera.main.ScreenToWorldPoint(mousePositionRaw);
 
         if (PlayerInteraction() == true)
         {
             hitObject();
-
             if (Input.GetKey(InteractionButton))
             {
                 if (hitObject().transform.tag == "HorizontalBlock")
                 {
+                    objectPositionToScreenWorldPoint.y = hit.transform.position.y;
                     hit.transform.position = objectPositionToScreenWorldPoint;
-
                 }
 
                 if (hitObject().transform.tag == "VerticalBlock")
                 {
-
+                    objectPositionToScreenWorldPoint.x = hit.transform.position.x;
+                    hit.transform.position = objectPositionToScreenWorldPoint;
                 }
             }
         }
-
     }
 
     private void DebugRaycast()
     {
         mousePositionFromCamera = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
         Debug.DrawRay(mousePositionFromCamera, mouseRay.direction * mouseRayDistance, Color.green);
     }
-
+    
     public bool PlayerInteraction()
     {
         return Physics.Raycast(mouseRay, out mouseHit, mouseRayDistance, interactiveMask);
@@ -76,11 +81,3 @@ public class MouseController : MonoBehaviour
         return hit;
     }
 }
-/*
- *      Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, distance); //Make a new Vector 3 which takes the position of your mouse's xy co ordinance
-        Vector3 objPosition = Camera.main.ScreenToWorldPoint(mousePosition); //Make a Vector 3 value that takes the mouse position relative to your screen
-        objPosition.y = transform.position.y; // limit from going to left to right
-        transform.position = objPosition; // Transform the object to objPosition
-        CanRotate = true;
-        print("Mouse Drag of Horizontal Platform is True");
-*/
