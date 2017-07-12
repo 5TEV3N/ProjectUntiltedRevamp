@@ -4,61 +4,89 @@ using UnityEngine;
 
 public class MouseController : MonoBehaviour
 {
-    [Header("Camera Movement")]
-    public Transform lookAt;
-    public Vector3 cameraOffset;
-    public float cameraSmoothSpeed;
-    public bool cameraPanOut;
-    public bool cameraPanIn;
-
-    [Header("Interaction")]
-    public Vector2 mousePositionOnScreen;
-    public Vector3 mousePositionRaw;
     public GameObject hit;
     public KeyCode InteractionButton;
     public float mouseRayDistance;
-
-    private Vector3 originalCameraPosition;
-    private Vector3 pannedInCameraPosition;
-
-    private Vector3 mousePositionFromCamera;
-    private Vector3 objectPositionToScreenWorldPoint;
+    public bool debugRayEnable;
 
     private RaycastHit mouseHit;
     private Ray mouseRay;
     private LayerMask interactiveMask;
 
-    private bool canRotate;
+    private Vector3 mousePositionRaw;
+    private Vector3 mousePositionFromCamera;
+    private Vector3 objectPositionToScreenWorldPoint;
+
+    private bool canRotateHorizontalBlock;
+    private bool canRotateVerticalBlock;
 
     private void Awake()
     {
-        originalCameraPosition = Camera.main.transform.position;
-        pannedInCameraPosition = new Vector3(0, 0, -5f);
         interactiveMask = LayerMask.GetMask("Interactive");
     }
 
     private void Update()
     {
-        //DebugRaycast();
-        mousePositionRaw = new Vector3(Input.mousePosition.x, Input.mousePosition.y,5f);
         mouseRay = Camera.main.ScreenPointToRay(Input.mousePosition);
+        mousePositionRaw = new Vector3(Input.mousePosition.x, Input.mousePosition.y,6.9f);  // not flexible
         objectPositionToScreenWorldPoint = Camera.main.ScreenToWorldPoint(mousePositionRaw);
+
+        if (debugRayEnable == true)
+        {
+            DebugRaycast();
+        }
 
         if (PlayerInteraction() == true)
         {
             hitObject();
             if (Input.GetKey(InteractionButton))
             {
-                if (hitObject().transform.tag == "HorizontalBlock")
+                if (hit.transform.tag == "HorizontalBlock")
                 {
                     objectPositionToScreenWorldPoint.y = hit.transform.position.y;
                     hit.transform.position = objectPositionToScreenWorldPoint;
+
+                    canRotateHorizontalBlock = true;
+                    if (Input.GetKey(KeyCode.E))
+                    {
+                        if (canRotateHorizontalBlock == true)
+                        {
+                            hit.transform.Rotate(0, 0, -1.5f);
+                        }
+                    }
+                    //else { Debug.Log("Debug: Can't rotate HBlock -1.5f"); }
+                    if (Input.GetKey(KeyCode.Q))
+                    {
+                        if (canRotateHorizontalBlock == true)
+                        {
+                            hit.transform.Rotate(0, 0, 1.5f);
+                        }
+                    }
+                    //else { Debug.Log("Debug: Can't rotate HBlock 1.5f"); }
                 }
 
-                if (hitObject().transform.tag == "VerticalBlock")
+                if (hit.transform.tag == "VerticalBlock")
                 {
                     objectPositionToScreenWorldPoint.x = hit.transform.position.x;
                     hit.transform.position = objectPositionToScreenWorldPoint;
+
+                    canRotateVerticalBlock = true;
+                    if (Input.GetKey(KeyCode.E))
+                    {
+                        if (canRotateVerticalBlock == true)
+                        {
+                            hit.transform.Rotate(0, 0, -1.5f);
+                        }
+                    }
+                    //else { Debug.Log("Debug: Can't rotate VBlock -1.5f"); }
+                    if (Input.GetKey(KeyCode.Q))
+                    {
+                        if (canRotateVerticalBlock == true)
+                        {
+                            hit.transform.Rotate(0, 0, 1.5f);
+                        }
+                    }
+                    //else { Debug.Log("Debug: Can't rotate VBlock 1.5f"); }
                 }
             }
         }
